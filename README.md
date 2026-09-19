@@ -45,6 +45,21 @@ python3 train.py
 The script trains for 500 episodes and reports both the final training success
 rate and a 100-episode greedy evaluation success rate.
 
+## Visualise the training result
+
+Create learning curves and compare one random trajectory with one learned,
+greedy trajectory:
+
+```bash
+python3 evaluate.py
+```
+
+The command writes three PNG files to `artifacts/evaluation/`:
+
+- `training_curves.png`: trailing mean return, success rate, and episode length;
+- `random_trajectory.png`: one untrained random flight;
+- `greedy_trajectory.png`: one flight using the learned Q-table.
+
 ## Status
 
 Stage 2 in progress: a tabular Q-learning agent and training script are available.

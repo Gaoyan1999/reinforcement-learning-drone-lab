@@ -60,6 +60,19 @@ The command writes three PNG files to `artifacts/evaluation/`:
 - `random_trajectory.png`: one untrained random flight;
 - `greedy_trajectory.png`: one flight using the learned Q-table.
 
+## Run the target-detection task
+
+Train on an 8×8 obstacle course where the target sits behind a wall and the
+drone succeeds once it enters the target's one-cell sensor radius:
+
+```bash
+python3 detection_task.py
+```
+
+The command writes a learned trajectory and training curves to
+`artifacts/detection_task/`. This is a fixed-target, range-detection task; it
+does not yet use camera images or random target locations.
+
 ## Status
 
 Stage 2 in progress: a tabular Q-learning agent and training script are available.

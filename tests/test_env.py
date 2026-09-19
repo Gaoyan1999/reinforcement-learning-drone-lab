@@ -24,6 +24,21 @@ class GridDroneEnvTests(unittest.TestCase):
         self.assertEqual(result.reward, -1.0)
         self.assertTrue(result.info["collision"])
 
+    def test_obstacle_collision_keeps_position(self) -> None:
+        env = GridDroneEnv(
+            width=3,
+            height=3,
+            start=(0, 0),
+            target=(2, 2),
+            obstacles={(1, 0)},
+        )
+
+        result = env.step(1)
+
+        self.assertEqual(result.state, (0, 0))
+        self.assertEqual(result.reward, -1.0)
+        self.assertTrue(result.info["collision"])
+
     def test_episode_times_out_at_maximum_steps(self) -> None:
         env = GridDroneEnv(width=3, height=3, start=(0, 0), target=(2, 2), max_steps=2)
 
@@ -32,6 +47,25 @@ class GridDroneEnvTests(unittest.TestCase):
 
         self.assertTrue(result.done)
         self.assertTrue(result.info["timed_out"])
+
+    def test_detection_radius_ends_episode_before_reaching_target_cell(self) -> None:
+        env = GridDroneEnv(
+            width=5,
+            height=3,
+            start=(0, 0),
+            target=(3, 1),
+            detection_radius=1.0,
+        )
+        env.step(1)
+        env.step(1)
+
+        result = env.step(0)
+
+        self.assertEqual(result.state, (2, 1))
+        self.assertNotEqual(result.state, env.target)
+        self.assertTrue(result.done)
+        self.assertTrue(result.info["detected_target"])
+        self.assertEqual(result.reward, 10.0)
 
     def test_reset_restores_initial_state(self) -> None:
         env = GridDroneEnv(width=3, height=3, start=(0, 0), target=(2, 2))

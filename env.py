@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from math import hypot
 from typing import Iterable, Mapping
 
 
@@ -53,11 +54,14 @@ class GridDroneEnv:
         step_penalty: float = -0.1,
         collision_penalty: float = -1.0,
         target_reward: float = 10.0,
+        detection_radius: float = 0.0,
     ) -> None:
         if width < 2 or height < 2:
             raise ValueError("width and height must both be at least 2")
         if max_steps < 1:
             raise ValueError("max_steps must be positive")
+        if detection_radius < 0:
+            raise ValueError("detection_radius cannot be negative")
 
         self.width = width
         self.height = height
@@ -68,6 +72,7 @@ class GridDroneEnv:
         self.step_penalty = step_penalty
         self.collision_penalty = collision_penalty
         self.target_reward = target_reward
+        self.detection_radius = detection_radius
 
         for label, position in (("start", start), ("target", target)):
             self._validate_position(position, label)
@@ -107,18 +112,20 @@ class GridDroneEnv:
         self.steps += 1
         self.trajectory.append(self.position)
 
-        reached_target = self.position == self.target
-        if reached_target:
+        detected_target = self._target_is_detected()
+        if detected_target:
             reward = self.target_reward
 
-        timed_out = self.steps >= self.max_steps and not reached_target
-        done = reached_target or timed_out
+        timed_out = self.steps >= self.max_steps and not detected_target
+        done = detected_target or timed_out
         return StepResult(
             state=self.position,
             reward=reward,
             done=done,
             info={
-                "reached_target": reached_target,
+                # Keep reached_target for compatibility with the earlier scripts.
+                "reached_target": detected_target,
+                "detected_target": detected_target,
                 "collision": collision,
                 "timed_out": timed_out,
                 "steps": self.steps,
@@ -141,19 +148,33 @@ class GridDroneEnv:
         axis.set_xlabel("x")
         axis.set_ylabel("y")
 
-        for obstacle_x, obstacle_y in self.obstacles:
+        for index, (obstacle_x, obstacle_y) in enumerate(self.obstacles):
             axis.add_patch(
                 Rectangle(
                     (obstacle_x - 0.45, obstacle_y - 0.45),
                     0.9,
                     0.9,
                     color="#4b5563",
-                    label="obstacle",
+                    label="obstacle" if index == 0 else "_nolegend_",
                 )
             )
 
         axis.scatter(*self.start, s=150, marker="s", color="#2563eb", label="start", zorder=3)
         axis.scatter(*self.target, s=220, marker="*", color="#f59e0b", label="target", zorder=3)
+        if self.detection_radius > 0:
+            from matplotlib.patches import Circle
+
+            axis.add_patch(
+                Circle(
+                    self.target,
+                    self.detection_radius,
+                    fill=False,
+                    linestyle="--",
+                    linewidth=2,
+                    color="#f59e0b",
+                    label="detection radius",
+                )
+            )
 
         path_x, path_y = zip(*self.trajectory)
         axis.plot(path_x, path_y, color="#16a34a", linewidth=2, alpha=0.8, label="trajectory")
@@ -166,9 +187,19 @@ class GridDroneEnv:
         return figure
 
     def _is_valid_position(self, position: Position) -> bool:
+        return self._is_in_bounds(position) and position not in self.obstacles
+
+    def _is_in_bounds(self, position: Position) -> bool:
         x, y = position
-        return 0 <= x < self.width and 0 <= y < self.height and position not in self.obstacles
+        return 0 <= x < self.width and 0 <= y < self.height
+
+    def _target_is_detected(self) -> bool:
+        """Return whether the drone is close enough for its sensor to detect the target."""
+        return hypot(
+            self.position[0] - self.target[0],
+            self.position[1] - self.target[1],
+        ) <= self.detection_radius
 
     def _validate_position(self, position: Position, label: str) -> None:
-        if not self._is_valid_position(position):
-            raise ValueError(f"{label} position {position} is outside the map or blocked")
+        if not self._is_in_bounds(position):
+            raise ValueError(f"{label} position {position} is outside the map")

@@ -1,67 +1,68 @@
-# Reinforcement Learning Drone Lab — 实践计划
+# Reinforcement Learning Drone Lab — Practice Plan
 
-## 项目目标
+## Project goal
 
-从零实现并训练一个二维无人机强化学习环境：无人机在有限步数和障碍物约束下移动，最终探测到目标。重点是理解可运行的环境、训练循环、评估与调参，而不是使用黑箱框架。
+Build and train a two-dimensional drone reinforcement-learning environment from scratch. The drone must navigate within a limited number of steps, avoid obstacles, and detect a target. The emphasis is on transparent environment code, training loops, evaluation, and experimentation rather than opaque frameworks.
 
-## 技术范围
+## Technology scope
 
 - Python 3
-- NumPy：Q-table 与数值计算
-- Matplotlib：训练曲线与轨迹可视化
-- 初期不依赖 Gymnasium、PyTorch、GPU 或复杂飞行模拟器
+- NumPy for Q-tables and numerical operations
+- Matplotlib for learning curves and trajectory visualisation
+- No Gymnasium, PyTorch, GPU, or heavyweight flight simulator in the first version
 
-## 实施路线
+## Implementation roadmap
 
-### 1. 环境与随机基线
+### 1. Environment and random baseline
 
-- 编写 `env.py`，提供 `reset()` 与 `step(action)`。
-- 建立二维网格、边界、无人机和目标。
-- 实现四个动作：上、下、左、右。
-- 编写随机策略，确认状态转移、奖励和终止条件正确。
+- Create `env.py` with `reset()` and `step(action)` methods.
+- Define a 2D grid, boundaries, a drone, and a target.
+- Implement four actions: up, down, left, and right.
+- Run a random policy to verify state transitions, rewards, and episode termination.
 
-**完成标准：** 随机策略能够运行完整 episode，并渲染飞行轨迹。
+**Done when:** a random agent can complete an episode and render its trajectory.
 
-### 2. 表格型 Q-learning
+### 2. Tabular Q-learning
 
-- 编写 `q_learning.py`，维护 `Q[state, action]`。
-- 实现 epsilon-greedy 探索与 Q 值更新。
-- 编写训练循环，保存每回合的回报、步数与成功状态。
+- Create `q_learning.py` to maintain `Q[state, action]`.
+- Implement epsilon-greedy exploration and the Q-learning update.
+- Train over many episodes while storing return, steps, and success status.
 
-**完成标准：** 在固定目标、无障碍地图中，贪心策略明显优于随机策略。
+**Done when:** on a fixed-target, obstacle-free map, the greedy policy clearly outperforms the random baseline.
 
-### 3. 评估与可视化
+### 3. Evaluation and visualisation
 
-- 编写 `evaluate.py`，分离训练和评估。
-- 绘制回报、成功率与每回合步数曲线。
-- 渲染训练前后策略轨迹，避免仅凭单一奖励判断效果。
+- Create `evaluate.py` to keep training and evaluation separate.
+- Plot episode returns, success rate, and episode length.
+- Render trajectories before and after training rather than relying only on a single reward number.
 
-**完成标准：** 独立评估中，训练策略的成功率达到 85% 以上。
+**Done when:** an independent evaluation reaches at least an 85% success rate.
 
-### 4. 探测任务
+### 4. Target-detection task
 
-- 加入目标探测半径：进入范围即发现目标并结束。
-- 加入障碍物、最大步数和每步成本。
-- 对比不同奖励设计：成功奖励、步数惩罚、碰撞惩罚与距离奖励。
+- Add a target-detection radius: reaching the radius detects the target and ends the episode.
+- Add obstacles, a maximum step count, and a per-step cost.
+- Compare reward designs: success reward, step penalty, collision penalty, and distance shaping.
 
-**完成标准：** 无人机能够在多种起点找到目标，并避免明显无效路线。
+**Done when:** the drone finds the target from several starting positions without taking obviously wasteful routes.
 
-### 5. 实验与复盘
+### 5. Experiments and reflection
 
-- 比较不同 epsilon、学习率与折扣率。
-- 记录一个失败设置和一个有效设置，解释奖励与探索如何影响结果。
-- 在 `results.md` 总结结论和下一步改进。
+- Compare exploration rate, learning rate, and discount factor settings.
+- Record one failed and one effective configuration, and explain how rewards and exploration affected learning.
+- Summarise observations and future work in `results.md`.
 
-## 后续可选扩展
+## Optional extensions
 
-1. 目标位置随机化与有限传感器视野。
-2. 用 DQN 替换 Q-table，以支持更大的状态空间。
-3. 加入移动目标或更真实的飞行动力学。
+1. Random target positions and limited sensor range.
+2. Replace the Q-table with a DQN for larger state spaces.
+3. Add a moving target or more realistic flight dynamics.
 
-## 预计文件结构
+## Planned structure
 
 ```text
 reinforcement-learning-drone-lab/
+├── README.md
 ├── plan.md
 ├── env.py
 ├── q_learning.py

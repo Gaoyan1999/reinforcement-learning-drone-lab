@@ -1,6 +1,7 @@
 import unittest
 
 from env import GridDroneEnv
+from q_learning import QLearningAgent
 
 
 class GridDroneEnvTests(unittest.TestCase):
@@ -41,6 +42,36 @@ class GridDroneEnvTests(unittest.TestCase):
         self.assertEqual(state, (0, 0))
         self.assertEqual(env.steps, 0)
         self.assertEqual(env.trajectory, [(0, 0)])
+
+    def test_q_learning_terminal_update_uses_reward_only(self) -> None:
+        agent = QLearningAgent(
+            width=2,
+            height=2,
+            action_count=4,
+            learning_rate=0.5,
+            discount_factor=0.95,
+            epsilon=0.0,
+        )
+
+        td_error = agent.update((0, 0), action=1, reward=10.0, next_state=(1, 0), done=True)
+
+        self.assertEqual(td_error, 10.0)
+        self.assertEqual(agent.q_values[0, 0, 1], 5.0)
+
+    def test_q_learning_non_terminal_update_includes_future_value(self) -> None:
+        agent = QLearningAgent(
+            width=2,
+            height=2,
+            action_count=4,
+            learning_rate=1.0,
+            discount_factor=0.5,
+            epsilon=0.0,
+        )
+        agent.q_values[1, 0, 3] = 8.0
+
+        agent.update((0, 0), action=1, reward=1.0, next_state=(1, 0), done=False)
+
+        self.assertEqual(agent.q_values[0, 0, 1], 5.0)
 
 
 if __name__ == "__main__":

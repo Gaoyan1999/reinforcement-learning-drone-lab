@@ -73,6 +73,22 @@ The command writes a learned trajectory and training curves to
 `artifacts/detection_task/`. This is a fixed-target, range-detection task; it
 does not yet use camera images or random target locations.
 
+## Compare hyperparameters
+
+Run a repeatable comparison of an effective default configuration, a
+short-sighted `discount_factor = 0` configuration, and a slow-learning-rate
+configuration:
+
+```bash
+python3 experiments.py
+```
+
+Results are saved locally to `artifacts/experiments/` as a CSV summary and a
+success-rate chart.
+
+The measured result snapshot and its interpretation are recorded in
+[results.md](results.md).
+
 ## Status
 
 Stage 2 in progress: a tabular Q-learning agent and training script are available.

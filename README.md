@@ -16,6 +16,24 @@ The first version uses tabular Q-learning, NumPy, and Matplotlib only. It delibe
 
 See [plan.md](plan.md) for the implementation plan and completion criteria.
 
+## Run the first baseline
+
+Install the small set of dependencies and run a random policy:
+
+```bash
+python -m pip install numpy matplotlib
+python random_baseline.py
+```
+
+The command reports the random-policy success rate and writes the final flight
+trajectory to `artifacts/random_baseline.png`.
+
+Run the environment checks with:
+
+```bash
+python -m unittest discover -s tests
+```
+
 ## Status
 
-Planning stage. The environment and training code will be added next.
+Stage 1 complete: the environment and a random-policy baseline are available.
